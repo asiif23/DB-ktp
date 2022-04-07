@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Ktp;
+use App\Models\ActivityLog;
 use App\Exports\KtpExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\Controller;
@@ -57,6 +58,10 @@ class AdministratorController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth()->user()->name;
+        activity()
+            ->username($user)
+            ->log('Menambahkan Data E-KTP');
         $request->validate([
             'nama' => 'required',
             'tempat_lahir' => 'required',
@@ -120,6 +125,10 @@ class AdministratorController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $user = auth()->user()->name;
+        activity()
+            ->username($user)
+            ->log('Mengedit Data E-KTP');
         $data = Ktp::findOrFail($id);
         $image = $request->file('foto');
         $new_name = $image->getClientOriginalExtension();
@@ -144,6 +153,11 @@ class AdministratorController extends Controller
      */
     public function destroy($id)
     {
+        $user = auth()->user()->name;
+        activity()
+            ->username($user)
+            ->log('Menghapus Data E-KTP');
+            
         Ktp::destroy($id);
         return redirect('ektp')
                 ->with('success', 'Data Berhasil Dihapus');
@@ -175,6 +189,10 @@ class AdministratorController extends Controller
     // }
 
     public function hapusUser($id){
+        $user = auth()->user()->name;
+        activity()
+            ->username($user)
+            ->log('Menghapus Data User');
         User::destroy($id);
         return redirect('/user/dashboard')
                 ->with('success', 'Data Berhasil Dihapus');
@@ -196,6 +214,10 @@ class AdministratorController extends Controller
     }
 
     public function ktpexport(){
+        $user = auth()->user()->name;
+        activity()
+            ->username($user)
+            ->log('Mengunduh Data E-KTP');
         return Excel::download(new KtpExport, 'data.xlsx');
     }
 
@@ -208,6 +230,10 @@ class AdministratorController extends Controller
     }
 
     public function import(){
+        $user = auth()->user()->name;
+        activity()
+            ->username($user)
+            ->log('Mengimport Data E-KTP');
         $file = request()->file('file');
         $nama_file = rand().$file->getClientOriginalName();
         $file->move('exceldata', $nama_file);
@@ -218,8 +244,8 @@ class AdministratorController extends Controller
     }
 
     public function activity(){
-        $data = Activity::all();
-        return view('admin.activity', compact('data'))
+        $log = ActivityLog::orderBy('id', 'desc')->paginate(10);
+        return view('admin.activity', compact('log'))
                 ->with('title', 'User Activity')
                 ->with('halaman', 'User Activity')
                 ->with('user', auth()->user()->name)

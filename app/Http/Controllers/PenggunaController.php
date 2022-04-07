@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
+use Spatie\Activitylog\Models\Activity;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Ktp;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Contracts\Activity as ContractsActivity;
 
 class PenggunaController extends Controller
 {
@@ -77,6 +80,10 @@ class PenggunaController extends Controller
      */
     protected function update(Request $request, $id)
     {
+        $user = auth()->user()->name;
+        activity()
+            ->username($user)
+            ->log('User ' . $request->name . ' telah diupdate');
         $data = User::findOrFail($id);
         $data->update($request->all());
         return redirect('admin/users')
@@ -91,6 +98,10 @@ class PenggunaController extends Controller
      */
     protected function destroy($id)
     {
+        $user = auth()->user()->name;
+        activity()
+            ->username($user)
+            ->log('Menghapus Data User');
         User::destroy($id);
         return redirect('admin/users')
                 ->with('success', 'Data Berhasil Dihapus');
@@ -140,6 +151,10 @@ class PenggunaController extends Controller
 
     protected function store(Request $request)
     {
+        $userr = auth()->user()->name;
+        activity()
+            ->username($userr)
+            ->log('Menambahkan User Baru');
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
@@ -161,6 +176,10 @@ class PenggunaController extends Controller
      * @return \App\Models\User
      */
     public function tambah_user(Request $request,$data){
+        $userr = auth()->user()->name;
+        activity()
+            ->username($userr)
+            ->log('menambahkan user baru');
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
